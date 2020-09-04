@@ -1,0 +1,6 @@
+# Ignore Build Files
+*build
+*.o
+
+# Ingore Test Images
+test*.png
