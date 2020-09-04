@@ -1,3 +1,6 @@
+# Ingore Vscode Config
+.vscode/
+
 # Ignore Build Files
 *build
 *.o
