@@ -1,27 +1,36 @@
 #include <core/ray.h>
 
 vec3* ray_at(ray* r, double* t, vec3* dest) {
-    return vec3_mul_scalar(&r->direction, t, dest); 
+    vec3_mul_scalar(&r->direction, t, dest);
+    vec3_add(&r->origin, dest, dest);
+    return dest; 
 }
 
 color* ray_color(ray* r, color* c) {
     sphere s = { vec3_zeros(), 1.5 };
     double t = ray_hit_sphere(&s, r);
     if(t > 0.0) {
-        vec3 hit_point, normal, col;
+        vec3 hit_point;
+        ray_at(r, &t, &hit_point);
+
+        vec3 normal;
         double one  = 1.0;
         double half = 0.5;
-        ray_at(r, &t, &hit_point);
+
         vec3_sub(&hit_point, &s.position, &normal);
         vec3_normalize(&normal, &normal);
-        vec3_add_scalar(&normal, &one, &col);
-        vec3_mul_scalar(&col, &half, &col);
+        
+        vec3_add_scalar(&normal, &one, &normal);
+        vec3_mul_scalar(&normal, &half, &normal);
+        
         *c = color_vec3(&normal);
         return c;
     }
 
-    vec3 cv = { 0.5, 0.7, 1.0 };
-    *c = color_vec3(&cv);
+    vec3 sky = { 0.5, 0.7, 1.0 };
+    color sky_color = color_vec3(&sky);
+    color white = WHITE;
+    color_lerp(&white, &sky_color, 0.5 * (r->direction.y + 1.0), c);
     return c;
 }
 

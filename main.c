@@ -7,8 +7,8 @@
 #include <maths/utils.h>
 #include <utils.h>
 
-#define WIDTH  1920
-#define HEIGHT 1080
+#define WIDTH  1920//3840
+#define HEIGHT 1080//2160
 
 int main() {
     random_init();
@@ -16,7 +16,7 @@ int main() {
     vec3   LOOKFROM     = { 13,  2,  3 };
     vec3   LOOKAT       = {  0,  0,  0 };
     vec3   VUP          = {  0,  1,  0 };
-    double FOCUS_DIST   = 10;
+    double FOCUS_DIST   = 13;
     double VFOV         = 20;
     double ASPECT_RATIO = (double)WIDTH / HEIGHT;
     double APERTURE     = 0.2;
@@ -36,8 +36,10 @@ int main() {
         for(uint32_t x = 0; x < img.width; x++) {
             double u = (double)x / (img.width - 1);
             double v = (double)y / (img.height - 1);
-            camera_ray(&u, &v, &cam, &r);
-            ray_color(&r, bitmap_pixel_at(&img, x, y));
+            ray_color(
+                camera_ray(&u, &v, &cam, &r),
+                bitmap_pixel_at(&img, x, y)
+            );
         }
     }
 

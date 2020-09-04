@@ -4,7 +4,7 @@ vec3 vec3_zeros(){ return (vec3){ 0.0, 0.0, 0.0 }; }
 vec3 vec3_ones() { return (vec3){ 1.0, 1.0, 1.0 }; }
 vec3 vec3_scalar(double s) { return (vec3){ s, s, s }; }
 vec3 vec3_random_uint_disk() {
-    double theta = random_double() * M_2_PI;
+    double theta = random_double() * M2PI;
     double u = random_double() + random_double();
     double r = (u > 1.0)? 2.0 - u: u;
     return (vec3){ r * cos(theta), r * sin(theta), 0 };
