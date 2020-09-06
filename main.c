@@ -31,11 +31,15 @@ int main() {
     world w;
     world_create(&w);
 
+
     sphere s1, s2;
     vec3 p1 = { 0,    0,  0 }; double r1 =   2.0;
     vec3 p2 = { 0, -102,  0 }; double r2 = 100.0;
-    world_add_sphere(&w, sphere_create(&p1, &r1, &s1));
-    world_add_sphere(&w, sphere_create(&p2, &r2, &s2));
+    sphere_create(&p1, &r1, &s1);
+    sphere_create(&p2, &r2, &s2);
+    
+    world_add_sphere(&w, &s1);
+    world_add_sphere(&w, &s2);
 
     bitmap img;
     bitmap_create(WIDTH, HEIGHT, &img);

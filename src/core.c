@@ -50,7 +50,6 @@ void ray_hit_face_normal(ray* r, hit* h) {
 sphere* sphere_create(vec3* position, double* radius, sphere* dest) {
     dest->position = *position;
     dest->radius = *radius;
-    dest->type = SPHERE;
     return dest;
 }
 
@@ -93,27 +92,28 @@ bool sphere_ray_hit(sphere* s, ray* r, double* t_min, double* t_max, hit* h) {
 
 // ============ [START] WORLD METHODS ============
 world* world_create(world* w) {
-    w->spheres = (sphere**)malloc(ARRAY_DEFAULT * sizeof(sphere*));
-    w->n_spheres = 0;
-    w->n_max_spheres = ARRAY_DEFAULT;
+    w->objects = (object*)calloc(ARRAY_DEFAULT, sizeof(object));
+    w->n_objects = 0;
+    w->n_max_objects = ARRAY_DEFAULT;
     return w;
 }
 
 world* world_add_sphere(world* w, sphere* s) {
-    if(w->n_spheres == w->n_max_spheres) {
-        double n_max_spheres = w->n_max_spheres * ARRAY_GROWTH;
-        w->spheres = (sphere**)realloc(w->spheres, n_max_spheres);
-        w->n_max_spheres = n_max_spheres;
+    if(w->n_objects == w->n_max_objects) {
+        uint32_t n_max_objects = w->n_max_objects * ARRAY_GROWTH;
+        uint32_t new_size = n_max_objects * sizeof(object);
+        w->objects = (object*)realloc(w->objects, new_size);
+        w->n_max_objects = n_max_objects;
     }
-    w->spheres[w->n_spheres] = s;
-    w->n_spheres++;
+    w->objects[w->n_objects] = (object){ SPHERE, { s } };
+    w->n_objects++;
     return w;
 }
 
 world* world_free(world* w) {
-    free(w->spheres);
-    w->n_spheres = 0;
-    w->n_max_spheres = ARRAY_DEFAULT;
+    free(w->objects);
+    w->n_objects = 0;
+    w->n_max_objects = ARRAY_DEFAULT;
 
     w = NULL;
     return w;
@@ -124,11 +124,16 @@ bool world_hit(world* w, ray* r, double* t_min, double* t_max, hit* h) {
     bool hitted = false;
     double closest = *t_max;
 
-    for(uint32_t i = 0; i < w->n_spheres; i++) {
-        if(sphere_ray_hit(w->spheres[i], r, t_min, &closest, &temp_h)) {
-            hitted = true;
-            closest = temp_h.t;
-            *h = temp_h;
+    for(uint32_t i = 0; i < w->n_objects; i++) {
+        object o = w->objects[i];
+        switch(w->objects[i].type) {
+            case SPHERE:
+                if(sphere_ray_hit(o.data.s, r, t_min, &closest, &temp_h)) {
+                    hitted = true;
+                    closest = temp_h.t;
+                    *h = temp_h;
+                }
+                break;
         }
     }
 

@@ -15,12 +15,17 @@
 // ============ STRUCTS ============
 typedef struct { vec3 origin, direction; }                                                            ray;
 typedef struct { vec3 point, normal; double t; bool front_face; }                                     hit;
-typedef struct { vec3 position; double radius; uint32_t type; }                                       sphere;
-typedef struct { sphere** spheres; uint32_t n_spheres; uint32_t n_max_spheres; }                      world;
+
+typedef struct { vec3 position; double radius; }                                                      sphere;
+typedef struct { vec3 position; vec3 normal; }                                                        plane;
+typedef struct { uint32_t type; union { sphere* s; plane* p; } data; }                                object;
+
+typedef struct { object* objects; uint32_t n_objects; uint32_t n_max_objects; }                       world;
+
 typedef struct { vec3 origin, lower_left_corner, horizontal, vertical, u, v, w; double lens_radius; } camera;
 
 // ============ ENUMS ============
-enum primtive { SPHERE };
+enum primtive { SPHERE, PLANE };
 
 // ============ RAY METHODS ============
 vec3*   ray_at              (ray* r, double* t, vec3* dest);
