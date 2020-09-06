@@ -1,5 +1,6 @@
-#include <utils.h>
+#include <bitmap.h>
 
+// ============ [START] BITMAP METHODS ============
 bitmap* bitmap_create(uint32_t width, uint32_t height, bitmap* dest) {
     dest->width = width; 
     dest->height = height;
@@ -7,6 +8,7 @@ bitmap* bitmap_create(uint32_t width, uint32_t height, bitmap* dest) {
 
     return dest; 
 }
+
 void bitmap_free(bitmap* b) {
     free(b->pixels);
     b = NULL;
@@ -56,3 +58,4 @@ void bitmap_to_png_file(bitmap* b, const char* path) {
     fclose(fp);
     png_destroy_write_struct(&png, &info);
 }
+// ============ [END] BITMAP METHODS ============

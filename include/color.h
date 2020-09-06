@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-#include <maths/vec3.h>
-#include <maths/vec4.h>
+#include <maths.h>
 
+// ============ CONSTANTS ============
 #define BLACK   color_rgb( 0,    0,   0);
 #define WHITE   color_rgb(255, 255, 255);
 #define RED     color_rgb(255,   0,   0);
@@ -15,14 +15,13 @@
 #define CYAN    color_rgb(  0, 255, 255);
 #define YELLOW  color_rgb(255, 255,   0);
 
-typedef struct {
-    uint8_t r, g, b, a;
-} color;
+// ============ STRUCTS ============
+typedef struct { uint8_t r, g, b, a; } color;
 
-color color_rgb (uint8_t r, uint8_t g, uint8_t b);
-color color_vec3(vec3* v);
-color color_vec4(vec4* v);
-
-color* color_lerp(color* a, color* b, const double t, color* dest);
+// ============ COLOR METHODS ============
+color  color_rgb  (uint8_t r, uint8_t g, uint8_t b);
+color  color_vec3 (vec3* v);
+color  color_vec4 (vec4* v);
+color* color_lerp (color* a, color* b, const double t, color* dest);
 
 #endif

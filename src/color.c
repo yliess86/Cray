@@ -1,8 +1,10 @@
-#include <core/color.h>
+#include <color.h>
 
+// ============ [START] COLOR METHODS ============
 color color_rgb (uint8_t r, uint8_t g, uint8_t b){
     return (color){ r, g, b, 255u };
 }
+
 color color_vec3(vec3* v){
     return (color){
         (uint8_t)(v->x * 255.0),
@@ -11,6 +13,7 @@ color color_vec3(vec3* v){
         255u
     };
 }
+
 color color_vec4(vec4* v){
     return (color){
         (uint8_t)(v->x * 255.0),
@@ -27,3 +30,4 @@ color* color_lerp(color* a, color* b, const double t, color* dest) {
     dest->a = (uint32_t)(a->a * (1.0 - t) + b->a * t);
     return dest;
 }
+// ============ [END] COLOR METHODS ============
