@@ -21,8 +21,9 @@ void   random_init           ();
 double random_double         ();
 double random_double_a_b     (double a, double b);
 
-// ============ ANGLES METHODS ============
+// ============ UTILS METHODS ============
 double degree_to_radian      (const double degree);
+double clamp                 (const double s, const double a, const double b);
 
 // ============ VEC2 METHODS ============
 vec2   vec2_zeros            ();
@@ -37,6 +38,8 @@ vec2*  vec2_add              (vec2* a, vec2* b, vec2* dest);
 vec2*  vec2_sub              (vec2* a, vec2* b, vec2* dest);
 vec2*  vec2_mul              (vec2* a, vec2* b, vec2* dest);
 vec2*  vec2_div              (vec2* a, vec2* b, vec2* dest);
+vec2*  vec2_lerp             (vec2* a, vec2* b, double* t, vec2* dest);
+vec2*  vec2_clamp            (vec2* v, double* a, double* b, vec2* dest);
 vec2*  vec2_add_scalar       (vec2* v, double* s, vec2* dest);
 vec2*  vec2_sub_scalar       (vec2* v, double* s, vec2* dest);
 vec2*  vec2_mul_scalar       (vec2* v, double* s, vec2* dest);
@@ -57,6 +60,8 @@ vec3*  vec3_add              (vec3* a, vec3* b, vec3* dest);
 vec3*  vec3_sub              (vec3* a, vec3* b, vec3* dest);
 vec3*  vec3_mul              (vec3* a, vec3* b, vec3* dest);
 vec3*  vec3_div              (vec3* a, vec3* b, vec3* dest);
+vec3*  vec3_lerp             (vec3* a, vec3* b, double* t, vec3* dest);
+vec3*  vec3_clamp            (vec3* v, double* a, double* b, vec3* dest);
 vec3*  vec3_cross            (vec3* a, vec3* b, vec3* dest);
 vec3*  vec3_add_scalar       (vec3* v, double* s, vec3* dest);
 vec3*  vec3_sub_scalar       (vec3* v, double* s, vec3* dest);
@@ -77,6 +82,8 @@ vec4*  vec4_add              (vec4* a, vec4* b, vec4* dest);
 vec4*  vec4_sub              (vec4* a, vec4* b, vec4* dest);
 vec4*  vec4_mul              (vec4* a, vec4* b, vec4* dest);
 vec4*  vec4_div              (vec4* a, vec4* b, vec4* dest);
+vec4*  vec4_lerp             (vec4* a, vec4* b, double* t, vec4* dest);
+vec4*  vec4_clamp            (vec4* v, double* a, double* b, vec4* dest);
 vec4*  vec4_add_scalar       (vec4* v, double* s, vec4* dest);
 vec4*  vec4_sub_scalar       (vec4* v, double* s, vec4* dest);
 vec4*  vec4_mul_scalar       (vec4* v, double* s, vec4* dest);

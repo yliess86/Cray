@@ -20,7 +20,7 @@ enum primtive { SPHERE };
 
 // ============ RAY METHODS ============
 vec3*   ray_at              (ray* r, double* t, vec3* dest);
-color*  ray_color           (ray* r, world* w, color* c);
+vec3*   ray_color           (ray* r, world* w, vec3* c);
 void    ray_hit_face_normal (ray* r, hit* h);
 
 // ============ SPHERE METHODS ============

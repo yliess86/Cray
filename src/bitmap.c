@@ -40,7 +40,7 @@ void bitmap_to_png_file(bitmap* b, const char* path) {
         png_byte* row = png_malloc(png, b->width * PIXEL_SIZE * sizeof(uint8_t));
         rows[y] = row;
         for(uint32_t x = 0; x < b->width; x++) {
-            color* pixel = bitmap_pixel_at(b, x, y);
+            color* pixel = bitmap_pixel_at(b, x, (b->height - 1) - y);
             *row++ = pixel->r;
             *row++ = pixel->g;
             *row++ = pixel->b;

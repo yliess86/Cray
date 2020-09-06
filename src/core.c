@@ -7,23 +7,22 @@ vec3* ray_at(ray* r, double* t, vec3* dest) {
     return dest;
 }
 
-color* ray_color(ray* r, world* w, color* c) {
+vec3* ray_color(ray* r, world* w, vec3* c) {
     hit h;
     double t_min = 0;
     double t_max = (double)INFINITY;
     if(world_hit(w, r, &t_min, &t_max, &h)) {
         double half = 0.5;
-        vec3 col = vec3_ones();
-        vec3_add(&h.normal, &col, &col);
-        vec3_mul_scalar(&col, &half, &col);
-        *c = color_vec3(&col);
+        *c = vec3_ones();
+        vec3_add(&h.normal, c, c);
+        vec3_mul_scalar(c, &half, c);
         return c;
     }
 
-    vec3 sky = { 0.5, 0.7, 1.0 };
-    color sky_color = color_vec3(&sky);
-    color white = WHITE;
-    color_lerp(&sky_color, &white, 0.5 * (r->direction.y + 1.0), c);
+    vec3 sky   = { 0.5, 0.7, 1.0 };
+    vec3 white = vec3_ones();
+    double t = 0.5 * (r->direction.y + 1.0);
+    vec3_lerp(&sky, &white, &t, c);
     return c;
 }
 
@@ -83,8 +82,8 @@ bool sphere_ray_hit(sphere* s, ray* r, double* t_min, double* t_max, hit* h) {
 world* world_create(world* w) {
     w->spheres = (sphere*)malloc(2 * sizeof(sphere));
 
-    vec3 p1 = {  0,  0,  0 }; double r1 = 1.5;
-    vec3 p2 = {  2,  0,  0 }; double r2 = 0.5;
+    vec3 p1 = { 0,    0,  0 }; double r1 =   2.0;
+    vec3 p2 = { 0, -102,  0 }; double r2 = 100.0;
 
     sphere_create(&p1, &r1, &w->spheres[0]);
     sphere_create(&p2, &r2, &w->spheres[1]);

@@ -14,11 +14,15 @@ double random_double_a_b(double a, double b) {
 }
 // ============ [END] RANDOM METHODS ============
 
-// ============ [START] ANGLES METHODS ============
+// ============ [START] UTILS METHODS ============
 double degree_to_radian(const double degree) {
     return degree * DEG2RAD;
 }
-// ============ [END] ANGLES METHODS ============
+
+double clamp(const double s, const double a, const double b) {
+    return (s < a)? a: (s > b)? b: s;
+}
+// ============ [END] UTILS METHODS ============
 
 // ============ [START] VEC2 METHODS ============
 vec2 vec2_zeros() {
@@ -74,6 +78,18 @@ vec2* vec2_mul(vec2* a, vec2* b, vec2* dest) {
 vec2* vec2_div(vec2* a, vec2* b, vec2* dest) {
     dest->x = a->x / b->x;
     dest->y = a->y / b->y;
+    return dest;
+}
+
+vec2* vec2_lerp(vec2* a, vec2* b, double* t, vec2* dest) {
+    dest->x = a->x * (1 - *t) + b->x * (*t);
+    dest->y = a->y * (1 - *t) + b->y * (*t);
+    return dest;
+}
+
+vec2* vec2_clamp(vec2* v, double* a, double* b, vec2* dest) {
+    dest->x = clamp(v->x, *a, *b);
+    dest->y = clamp(v->y, *a, *b);
     return dest;
 }
 
@@ -173,6 +189,21 @@ vec3* vec3_div(vec3* a, vec3* b, vec3* dest) {
     dest->z = a->z / b->z;
     return dest;
 }
+
+vec3* vec3_lerp(vec3* a, vec3* b, double* t, vec3* dest) {
+    dest->x = a->x * (1 - *t) + b->x * (*t);
+    dest->y = a->y * (1 - *t) + b->y * (*t);
+    dest->z = a->z * (1 - *t) + b->z * (*t);
+    return dest;
+}
+
+vec3* vec3_clamp(vec3* v, double* a, double* b, vec3* dest) {
+    dest->x = clamp(v->x, *a, *b);
+    dest->y = clamp(v->y, *a, *b);
+    dest->z = clamp(v->z, *a, *b);
+    return dest;
+}
+
 vec3* vec3_cross(vec3* a, vec3* b, vec3* dest) {
     dest->x = a->y * b->z - a->z * b->y;
     dest->y = a->z * b->x - a->x * b->z;
@@ -272,6 +303,22 @@ vec4* vec4_div(vec4* a, vec4* b, vec4* dest) {
     dest->y = a->y / b->y;
     dest->z = a->z / b->z;
     dest->w = a->w / b->w;
+    return dest;
+}
+
+vec4* vec4_lerp(vec4* a, vec4* b, double* t, vec4* dest) {
+    dest->x = a->x * (1 - *t) + b->x * (*t);
+    dest->y = a->y * (1 - *t) + b->y * (*t);
+    dest->z = a->z * (1 - *t) + b->z * (*t);
+    dest->w = a->w * (1 - *t) + b->w * (*t);
+    return dest;
+}
+
+vec4* vec4_clamp(vec4* v, double* a, double* b, vec4* dest) {
+    dest->x = clamp(v->x, *a, *b);
+    dest->y = clamp(v->y, *a, *b);
+    dest->z = clamp(v->z, *a, *b);
+    dest->w = clamp(v->w, *a, *b);
     return dest;
 }
 
