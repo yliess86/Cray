@@ -8,11 +8,15 @@
 #include <color.h>
 #include <maths.h>
 
+// ============ CONSTANTS ============
+#define ARRAY_DEFAULT 10
+#define ARRAY_GROWTH  1.5
+
 // ============ STRUCTS ============
 typedef struct { vec3 origin, direction; }                                                            ray;
 typedef struct { vec3 point, normal; double t; bool front_face; }                                     hit;
 typedef struct { vec3 position; double radius; uint32_t type; }                                       sphere;
-typedef struct { sphere* spheres; uint32_t n_spheres; }                                               world;
+typedef struct { sphere** spheres; uint32_t n_spheres; uint32_t n_max_spheres; }                      world;
 typedef struct { vec3 origin, lower_left_corner, horizontal, vertical, u, v, w; double lens_radius; } camera;
 
 // ============ ENUMS ============
@@ -29,6 +33,7 @@ bool    sphere_ray_hit      (sphere* s, ray* r, double* t_min, double* t_max, hi
 
 // ============ WORLD METHODS ============
 world*  world_create        (world* w);
+world*  world_add_sphere    (world* w, sphere* s);
 world*  world_free          (world* w);
 bool    world_hit           (world* w, ray* r, double* t_min, double* t_max, hit* h);
 

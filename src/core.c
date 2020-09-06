@@ -93,21 +93,27 @@ bool sphere_ray_hit(sphere* s, ray* r, double* t_min, double* t_max, hit* h) {
 
 // ============ [START] WORLD METHODS ============
 world* world_create(world* w) {
-    w->spheres = (sphere*)malloc(2 * sizeof(sphere));
+    w->spheres = (sphere**)malloc(ARRAY_DEFAULT * sizeof(sphere*));
+    w->n_spheres = 0;
+    w->n_max_spheres = ARRAY_DEFAULT;
+    return w;
+}
 
-    vec3 p1 = { 0,    0,  0 }; double r1 =   2.0;
-    vec3 p2 = { 0, -102,  0 }; double r2 = 100.0;
-
-    sphere_create(&p1, &r1, &w->spheres[0]);
-    sphere_create(&p2, &r2, &w->spheres[1]);
-    w->n_spheres = 2;
-
+world* world_add_sphere(world* w, sphere* s) {
+    if(w->n_spheres == w->n_max_spheres) {
+        double n_max_spheres = w->n_max_spheres * ARRAY_GROWTH;
+        w->spheres = (sphere**)realloc(w->spheres, n_max_spheres);
+        w->n_max_spheres = n_max_spheres;
+    }
+    w->spheres[w->n_spheres] = s;
+    w->n_spheres++;
     return w;
 }
 
 world* world_free(world* w) {
     free(w->spheres);
     w->n_spheres = 0;
+    w->n_max_spheres = ARRAY_DEFAULT;
 
     w = NULL;
     return w;
@@ -119,7 +125,7 @@ bool world_hit(world* w, ray* r, double* t_min, double* t_max, hit* h) {
     double closest = *t_max;
 
     for(uint32_t i = 0; i < w->n_spheres; i++) {
-        if(sphere_ray_hit(&w->spheres[i], r, t_min, &closest, &temp_h)) {
+        if(sphere_ray_hit(w->spheres[i], r, t_min, &closest, &temp_h)) {
             hitted = true;
             closest = temp_h.t;
             *h = temp_h;
