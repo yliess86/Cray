@@ -21,7 +21,6 @@ typedef struct { uint8_t r, g, b, a; } color;
 // ============ COLOR METHODS ============
 color  color_rgb  (uint8_t r, uint8_t g, uint8_t b);
 color  color_vec3 (vec3* v);
-color  color_vec4 (vec4* v);
 color* color_lerp (color* a, color* b, const double t, color* dest);
 
 #endif

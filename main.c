@@ -23,6 +23,7 @@ int main() {
     double   SAMPLES_PER_PIXELS_D = (double)SAMPLES_PER_PIXELS;
     double   ZERO                 = 0;
     double   ONE                  = 1;
+    int      MAX_DEPTH            = 100;
 
     camera cam;
     camera_setup(&LOOKFROM, &LOOKAT, &VUP, &VFOV, &ASPECT_RATIO, &APERTURE, &FOCUS_DIST, &cam);
@@ -41,12 +42,12 @@ int main() {
                 double u = (x + random_double()) / (img.width - 1);
                 double v = (y + random_double()) / (img.height - 1);
                 
-                vec3 sc;
-                ray_color(camera_ray(&u, &v, &cam, &r), &w, &sc);
+                vec3 sc = ray_color(camera_ray(&u, &v, &cam, &r), &w, MAX_DEPTH);
                 vec3_add(&c, &sc, &c);
             }
             vec3_div_scalar(&c, &SAMPLES_PER_PIXELS_D, &c);
-            vec3_clamp(&c, &ZERO, &ONE, &c);
+            vec3_clamp(&c, &ZERO, &ONE, &c);            
+            vec3_sqrt(&c, &c);
 
             color* pixel = bitmap_pixel_at(&img, x, y);
             *pixel = color_vec3(&c);

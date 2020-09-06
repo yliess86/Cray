@@ -7,23 +7,36 @@ vec3* ray_at(ray* r, double* t, vec3* dest) {
     return dest;
 }
 
-vec3* ray_color(ray* r, world* w, vec3* c) {
+vec3 ray_color(ray* r, world* w, int depth) {
     hit h;
-    double t_min = 0;
+    if(depth <= 0)
+        return vec3_zeros();
+
+    vec3 col;
+    double t_min = 0.001;
     double t_max = (double)INFINITY;
     if(world_hit(w, r, &t_min, &t_max, &h)) {
+        vec3 target;
+        vec3 rand_scatter = vec3_random_unit_vector();
+        vec3_add(&h.point, &h.normal, &target);
+        vec3_add(&target, &rand_scatter, &target);
+
+        vec3 new_dir;
+        vec3_sub(&target, &h.point, &new_dir);
+        ray new_r = { h.point, new_dir };
+
         double half = 0.5;
-        *c = vec3_ones();
-        vec3_add(&h.normal, c, c);
-        vec3_mul_scalar(c, &half, c);
-        return c;
+        col = ray_color(&new_r, w, depth - 1);
+        vec3_mul_scalar(&col, &half, &col);
+
+        return col;
     }
 
     vec3 sky   = { 0.5, 0.7, 1.0 };
     vec3 white = vec3_ones();
     double t = 0.5 * (r->direction.y + 1.0);
-    vec3_lerp(&sky, &white, &t, c);
-    return c;
+    vec3_lerp(&sky, &white, &t, &col);
+    return col;
 }
 
 void ray_hit_face_normal(ray* r, hit* h) {
@@ -160,7 +173,7 @@ camera* camera_setup(
 }
 
 ray* camera_ray(double* s, double* t, camera* cam, ray* r) {
-    vec3 rd = vec3_random_uint_disk();
+    vec3 rd = vec3_random_unit_disk();
     vec3_mul_scalar(&rd, &cam->lens_radius, &rd);
 
     vec3 u_rdx, v_rdy, offset;
