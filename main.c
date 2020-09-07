@@ -89,9 +89,16 @@ void* tiles_render(void* args) {
         pthread_mutex_lock(&tlock);
         tile* t = &tq.tiles[tq.current++];
         pthread_mutex_unlock(&tlock);
-
-        printf("Rendering Tile %i / %i \n", t->id + 1, tq.n_tiles);
         tile_render(ta->img, ta->w, ta->cam, t);
+
+        double progress = (double)tq.current / tq.n_tiles;
+        uint8_t n_bars = (uint8_t)(progress * 25);
+        char* progress_bar = (char*)calloc(25, sizeof(char));
+        for(uint8_t i = 0; i < 25; i++)
+            progress_bar[i] = (i < n_bars)? '#': ' ';
+        printf("\rClay Rendering Tiles ... [%s] %2.2f%%", progress_bar, progress * 100);
+        fflush(stdout);
+        free(progress_bar);
     }
 
     return NULL;
@@ -131,6 +138,9 @@ int main() {
     bitmap_create(WIDTH, HEIGHT, &img);
 
     // Generate and Render each Tile
+    printf("\rClay Rendering Tiles ... [                         ] 0.0%%");
+    fflush(stdout);
+
     tq = tile_queue_generate(&img);
     ta = (targs){ &img, &w, &cam };
     pthread_mutex_init(&tlock, NULL);
@@ -138,6 +148,8 @@ int main() {
         pthread_create(&tthreads[i], NULL, tiles_render, (void*)&ta);
     for(uint32_t i = 0; i < N_THREADS; i++)
         pthread_join(tthreads[i], NULL);
+
+    printf("\n");
     
     // Save PNG
     bitmap_to_png_file(&img, "../test.png");
