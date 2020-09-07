@@ -7,10 +7,10 @@
 #include <maths.h>
 #include <bitmap.h>
 
-#define WIDTH             800//3840
-#define HEIGHT            800//2160
+#define WIDTH             3840
+#define HEIGHT            2160
 #define TILE_SIZE         128
-#define SAMPLES_PER_PIXEL 50
+#define SAMPLES_PER_PIXEL 100
 #define MAX_DEPTH         100
 #define N_THREADS         8
 
@@ -18,7 +18,7 @@ typedef struct { bitmap* img; world* w; camera* cam; }              targs;
 typedef struct { uint32_t id; vec2 origin; }                        tile;
 typedef struct { tile* tiles; uint32_t n_tiles; uint32_t current; } tile_queue;
 
-tile_queue tile_queue_generate(bitmap* img) {
+void tile_queue_generate(bitmap* img, tile_queue* dest) {
     uint32_t n_rows = img->height / TILE_SIZE;
     uint32_t n_cols = img->width / TILE_SIZE;
     n_rows += (img->height - n_rows * TILE_SIZE > 0)? 1: 0;
@@ -33,23 +33,19 @@ tile_queue tile_queue_generate(bitmap* img) {
         }
     }
 
-    return (tile_queue){ tiles, n_tiles, 0 };
+    dest->tiles = tiles;
+    dest->n_tiles = n_tiles;
+    dest->current = 0;
 }
 
-tile_queue* tile_queue_free(tile_queue* tq) {
+void tile_queue_free(tile_queue* tq) {
     free(tq->tiles);
     tq->current = 0;
     tq->n_tiles = 0;
-    
     tq = NULL;
-    return tq;
 }
 
 void tile_render(bitmap* img, world* w, camera* cam, tile* t) {
-    double SAMPLES_PER_PIXEL_D = (double)SAMPLES_PER_PIXEL;
-    double ZERO                = 0;
-    double ONE                 = 1;
-    
     ray r;
     for(uint32_t y = t->origin.y; y < t->origin.y + TILE_SIZE; y++) {
         if(y > img->height - 1)
@@ -64,11 +60,12 @@ void tile_render(bitmap* img, world* w, camera* cam, tile* t) {
                 double u = (x + random_double()) / (img->width - 1);
                 double v = (y + random_double()) / (img->height - 1);
                 
-                vec3 sample_col = ray_color(camera_ray(&u, &v, cam, &r), w, MAX_DEPTH);
+                camera_ray(u, v, cam, &r);
+                vec3 sample_col = ray_color(&r, w, MAX_DEPTH);
                 vec3_add(&col, &sample_col, &col);
             }
-            vec3_div_scalar(&col, &SAMPLES_PER_PIXEL_D, &col);
-            vec3_clamp(&col, &ZERO, &ONE, &col);            
+            vec3_div_scalar(&col, (double)SAMPLES_PER_PIXEL, &col);
+            vec3_clamp(&col, 0, 1, &col);            
             vec3_sqrt(&col, &col);
 
             color* pixel = bitmap_pixel_at(img, x, y);
@@ -118,20 +115,31 @@ int main() {
     double   APERTURE            = 0.2;
 
     camera cam;
-    camera_setup(&LOOKFROM, &LOOKAT, &VUP, &VFOV, &ASPECT_RATIO, &APERTURE, &FOCUS_DIST, &cam);
+    camera_setup(&LOOKFROM, &LOOKAT, &VUP, VFOV, ASPECT_RATIO, APERTURE, FOCUS_DIST, &cam);
 
     // World Setup
     world w;
     world_create(&w);
 
-    sphere s1, s2;
-    vec3 p1 = { 0,    0,  0 }; double r1 =   2.0;
-    vec3 p2 = { 0, -102,  0 }; double r2 = 100.0;
-    sphere_create(&p1, &r1, &s1);
-    sphere_create(&p2, &r2, &s2);
+    material m1, m2, m3;
+    vec3 c1 = { 0.1, 0.1, 0.1 };
+    vec3 c2 = { 0.1, 0.2, 0.7 };
+    vec3 c3 = { 0.2, 0.6, 0.3 };
+    metalic_create   (&c1, &m1);
+    lambertian_create(&c2, &m2);
+    lambertian_create(&c3, &m3);
+
+    sphere s1, s2, s3;
+    vec3 p1 = {   0,    0,   0 };
+    vec3 p2 = { 1.5, -1.5, 1.5 };
+    vec3 p3 = {   0, -102,   0 };
+    sphere_create(&p1, 2.0, &m1, &s1);
+    sphere_create(&p2, 0.5, &m2, &s2);
+    sphere_create(&p3, 100, &m3, &s3);
     
     world_add_sphere(&w, &s1);
     world_add_sphere(&w, &s2);
+    world_add_sphere(&w, &s3);
 
     // PNG Initialization
     bitmap img;
@@ -141,8 +149,8 @@ int main() {
     printf("\rClay Rendering Tiles ... [                         ] 0.0%%");
     fflush(stdout);
 
-    tq = tile_queue_generate(&img);
     ta = (targs){ &img, &w, &cam };
+    tile_queue_generate(&img, &tq);
     pthread_mutex_init(&tlock, NULL);
     for(uint32_t i = 0; i < N_THREADS; i++)
         pthread_create(&tthreads[i], NULL, tiles_render, (void*)&ta);

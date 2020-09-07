@@ -1,12 +1,10 @@
 #include <bitmap.h>
 
 // ============ [START] BITMAP METHODS ============
-bitmap* bitmap_create(uint32_t width, uint32_t height, bitmap* dest) {
+void bitmap_create(uint32_t width, uint32_t height, bitmap* dest) {
     dest->width = width; 
     dest->height = height;
     dest->pixels = (color*)malloc(width * height * sizeof(color));
-
-    return dest; 
 }
 
 void bitmap_free(bitmap* b) {

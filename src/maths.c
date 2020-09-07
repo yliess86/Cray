@@ -78,91 +78,87 @@ double vec3_dot(vec3* a, vec3* b) {
     return a->x * b->x + a->y * b->y + a->z * b->z;
 }
 
-vec3* vec3_sqrt(vec3* v, vec3* dest) {
+void vec3_reflect(vec3* v, vec3* n, vec3* dest) {
+    vec3 dir;
+    vec3_mul_scalar(n, 2 * vec3_dot(v, n), &dir);
+    vec3_sub(v, &dir, dest);
+}
+
+void vec3_sqrt(vec3* v, vec3* dest) {
     dest->x = sqrt(v->x);
     dest->y = sqrt(v->y);
     dest->z = sqrt(v->z);
-    return dest;
 }
 
-vec3* vec3_neg(vec3* v, vec3* dest) {
+void vec3_neg(vec3* v, vec3* dest) {
     dest->x = -v->x;
     dest->y = -v->y;
     dest->z = -v->z;
-    return dest;
 }
 
-vec3* vec3_add(vec3* a, vec3* b, vec3* dest) {
+void vec3_add(vec3* a, vec3* b, vec3* dest) {
     dest->x = a->x + b->x;
     dest->y = a->y + b->y;
     dest->z = a->z + b->z;
-    return dest;
 }
 
-vec3* vec3_sub(vec3* a, vec3* b, vec3* dest) {
+void vec3_sub(vec3* a, vec3* b, vec3* dest) {
     dest->x = a->x - b->x;
     dest->y = a->y - b->y;
     dest->z = a->z - b->z;
-    return dest;
 }
 
-vec3* vec3_mul(vec3* a, vec3* b, vec3* dest) {
+void vec3_mul(vec3* a, vec3* b, vec3* dest) {
     dest->x = a->x * b->x;
     dest->y = a->y * b->y;
     dest->z = a->z * b->z;
-    return dest;
 }
 
-vec3* vec3_div(vec3* a, vec3* b, vec3* dest) {
+void vec3_div(vec3* a, vec3* b, vec3* dest) {
     dest->x = a->x / b->x;
     dest->y = a->y / b->y;
     dest->z = a->z / b->z;
-    return dest;
 }
 
-vec3* vec3_lerp(vec3* a, vec3* b, double* t, vec3* dest) {
-    dest->x = a->x * (1 - *t) + b->x * (*t);
-    dest->y = a->y * (1 - *t) + b->y * (*t);
-    dest->z = a->z * (1 - *t) + b->z * (*t);
-    return dest;
+void vec3_lerp(vec3* a, vec3* b, double t, vec3* dest) {
+    dest->x = a->x * (1 - t) + b->x * t;
+    dest->y = a->y * (1 - t) + b->y * t;
+    dest->z = a->z * (1 - t) + b->z * t;
 }
 
-vec3* vec3_clamp(vec3* v, double* a, double* b, vec3* dest) {
-    dest->x = clamp(v->x, *a, *b);
-    dest->y = clamp(v->y, *a, *b);
-    dest->z = clamp(v->z, *a, *b);
-    return dest;
+void vec3_clamp(vec3* v, double a, double b, vec3* dest) {
+    dest->x = clamp(v->x, a, b);
+    dest->y = clamp(v->y, a, b);
+    dest->z = clamp(v->z, a, b);
 }
 
-vec3* vec3_cross(vec3* a, vec3* b, vec3* dest) {
+void vec3_cross(vec3* a, vec3* b, vec3* dest) {
     dest->x = a->y * b->z - a->z * b->y;
     dest->y = a->z * b->x - a->x * b->z;
     dest->z = a->x * b->y - a->y * b->x;
-    return dest;
 }
 
-vec3* vec3_add_scalar(vec3* v, double* s, vec3* dest) {
-    vec3 vs = vec3_scalar(*s);
-    return vec3_add(v, &vs, dest);
+void vec3_add_scalar(vec3* v, double s, vec3* dest) {
+    vec3 vs = vec3_scalar(s);
+    vec3_add(v, &vs, dest);
 }
 
-vec3* vec3_sub_scalar(vec3* v, double* s, vec3* dest) {
-    vec3 vs = vec3_scalar(*s);
-    return vec3_sub(v, &vs, dest);
+void vec3_sub_scalar(vec3* v, double s, vec3* dest) {
+    vec3 vs = vec3_scalar(s);
+    vec3_sub(v, &vs, dest);
 }
 
-vec3* vec3_mul_scalar(vec3* v, double* s, vec3* dest) {
-    vec3 vs = vec3_scalar(*s);
-    return vec3_mul(v, &vs, dest);
+void vec3_mul_scalar(vec3* v, double s, vec3* dest) {
+    vec3 vs = vec3_scalar(s);
+    vec3_mul(v, &vs, dest);
 }
 
-vec3* vec3_div_scalar(vec3* v, double* s, vec3* dest) {
-    vec3 vs = vec3_scalar(*s);
-    return vec3_div(v, &vs, dest);
+void vec3_div_scalar(vec3* v, double s, vec3* dest) {
+    vec3 vs = vec3_scalar(s);
+    vec3_div(v, &vs, dest);
 }
 
-vec3* vec3_normalize(vec3* v, vec3* dest) {
-    double length = vec3_length(v);
-    return vec3_div_scalar(v, &length, dest);
+void vec3_normalize(vec3* v, vec3* dest) {
+    vec3_div_scalar(v, vec3_length(v), dest);
 }
 // ============ [END] VEC3 METHODS ============

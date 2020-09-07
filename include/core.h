@@ -14,10 +14,15 @@
 
 // ============ STRUCTS ============
 typedef struct { vec3 origin, direction; }                                                            ray;
-typedef struct { vec3 point, normal; double t; bool front_face; }                                     hit;
 
-typedef struct { vec3 position; double radius; }                                                      sphere;
-typedef struct { vec3 position; vec3 normal; }                                                        plane;
+typedef struct { vec3 albedo; }                                                                       lambertian;
+typedef struct { vec3 albedo; }                                                                       metalic;
+typedef struct { uint32_t type; union { lambertian* l; metalic* m; } data; }                          material;
+
+typedef struct { vec3 point, normal; double t; bool front_face; material* m; }                        hit;
+
+typedef struct { vec3 position; double radius; material* m; }                                         sphere;
+typedef struct { vec3 position; vec3 normal; material* m; }                                           plane;
 typedef struct { uint32_t type; union { sphere* s; plane* p; } data; }                                object;
 
 typedef struct { object* objects; uint32_t n_objects; uint32_t n_max_objects; }                       world;
@@ -25,25 +30,34 @@ typedef struct { object* objects; uint32_t n_objects; uint32_t n_max_objects; } 
 typedef struct { vec3 origin, lower_left_corner, horizontal, vertical, u, v, w; double lens_radius; } camera;
 
 // ============ ENUMS ============
-enum primtive { SPHERE, PLANE };
+enum primtives { SPHERE, PLANE };
+enum materials { LAMBERTIAN, METALIC };
 
 // ============ RAY METHODS ============
-vec3*   ray_at              (ray* r, double* t, vec3* dest);
-vec3    ray_color           (ray* r, world* w, int depth);
-void    ray_hit_face_normal (ray* r, hit* h);
+void ray_at              (ray* r, double t, vec3* dest);
+vec3 ray_color           (ray* r, world* w, int depth);
+void ray_hit_face_normal (ray* r, hit* h);
+
+// ============ MATERIAL METHODS ============
+void lambertian_create   (vec3* albedo, material* dest);
+void metalic_create      (vec3* albedo, material* dest);
+
+bool lambertian_scatter  (lambertian* l, hit* h, vec3* attenuation, ray* r_scattered);
+bool metalic_scatter     (metalic* m, ray* r_in, hit* h, vec3* attenuation, ray* r_scattered);
+bool material_scatter    (material* m, ray* r_in, hit* h, vec3* attenuation, ray* r_scattered);
 
 // ============ SPHERE METHODS ============
-sphere* sphere_create       (vec3* position, double* radius, sphere* dest);
-bool    sphere_ray_hit      (sphere* s, ray* r, double* t_min, double* t_max, hit* h);
+void sphere_create       (vec3* position, double radius, material* m, sphere* dest);
+bool sphere_ray_hit      (sphere* s, ray* r, double t_min, double t_max, hit* h);
 
 // ============ WORLD METHODS ============
-world*  world_create        (world* w);
-world*  world_add_sphere    (world* w, sphere* s);
-world*  world_free          (world* w);
-bool    world_hit           (world* w, ray* r, double* t_min, double* t_max, hit* h);
+void  world_create       (world* w);
+void  world_add_sphere   (world* w, sphere* s);
+void  world_free         (world* w);
+bool  world_hit          (world* w, ray* r, double t_min, double t_max, hit* h);
 
 // ============ CAMERA METHODS ============
-camera* camera_setup        (vec3* lookfrom, vec3* lookat, vec3* vup, double* vfov, double* aspect_ratio, double* aperture, double* focus_dist, camera* cam);
-ray*    camera_ray          (double* s, double* t, camera* cam, ray* r);
+void  camera_setup       (vec3* lookfrom, vec3* lookat, vec3* vup, double vfov, double aspect_ratio, double aperture, double focus_dist, camera* cam);
+void  camera_ray         (double s, double t, camera* cam, ray* r);
 
 #endif

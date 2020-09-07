@@ -14,11 +14,10 @@ color color_vec3(vec3* v){
     };
 }
 
-color* color_lerp(color* a, color* b, const double t, color* dest) {
+void color_lerp(color* a, color* b, const double t, color* dest) {
     dest->r = (uint32_t)(a->r * (1.0 - t) + b->r * t);
     dest->g = (uint32_t)(a->g * (1.0 - t) + b->g * t);
     dest->b = (uint32_t)(a->b * (1.0 - t) + b->b * t);
     dest->a = (uint32_t)(a->a * (1.0 - t) + b->a * t);
-    return dest;
 }
 // ============ [END] COLOR METHODS ============
