@@ -7,26 +7,25 @@
 #include <maths.h>
 #include <bitmap.h>
 
-#define WIDTH             3840
-#define HEIGHT            2160
-#define TILE_SIZE         256
-#define SAMPLES_PER_PIXEL 10
+#define WIDTH             800//3840
+#define HEIGHT            800//2160
+#define TILE_SIZE         128
+#define SAMPLES_PER_PIXEL 50
 #define MAX_DEPTH         100
-#define N_THREADS         4
+#define N_THREADS         8
 
+typedef struct { bitmap* img; world* w; camera* cam; }              targs;
 typedef struct { uint32_t id; vec2 origin; }                        tile;
 typedef struct { tile* tiles; uint32_t n_tiles; uint32_t current; } tile_queue;
 
-tile_queue tile_generate(bitmap* img) {
+tile_queue tile_queue_generate(bitmap* img) {
     uint32_t n_rows = img->height / TILE_SIZE;
     uint32_t n_cols = img->width / TILE_SIZE;
     n_rows += (img->height - n_rows * TILE_SIZE > 0)? 1: 0;
     n_cols += (img->width - n_cols * TILE_SIZE > 0)? 1: 0;
 
     uint32_t n_tiles = n_rows * n_cols;
-    printf("%i tiles, %i rows and %i cols\n", n_tiles, n_rows, n_cols);
     tile* tiles = (tile*)calloc(n_tiles, sizeof(tile));
-    
     for(uint32_t r = 0; r < n_rows; r++) {
         for(uint32_t c = 0; c < n_cols; c++) {
             uint32_t id = r * n_cols + c;
@@ -35,6 +34,15 @@ tile_queue tile_generate(bitmap* img) {
     }
 
     return (tile_queue){ tiles, n_tiles, 0 };
+}
+
+tile_queue* tile_queue_free(tile_queue* tq) {
+    free(tq->tiles);
+    tq->current = 0;
+    tq->n_tiles = 0;
+    
+    tq = NULL;
+    return tq;
 }
 
 void tile_render(bitmap* img, world* w, camera* cam, tile* t) {
@@ -69,9 +77,31 @@ void tile_render(bitmap* img, world* w, camera* cam, tile* t) {
     }
 }
 
+tile_queue      tq;
+pthread_t       tthreads[N_THREADS];
+pthread_mutex_t tlock;
+targs           ta;
+
+void* tiles_render(void* args) {
+    targs* ta = (targs*)args;
+
+    while(tq.current < tq.n_tiles) {
+        pthread_mutex_lock(&tlock);
+        tile* t = &tq.tiles[tq.current++];
+        pthread_mutex_unlock(&tlock);
+
+        printf("Rendering Tile %i / %i \n", t->id + 1, tq.n_tiles);
+        tile_render(ta->img, ta->w, ta->cam, t);
+    }
+
+    return NULL;
+}
+
 int main() {
+    // Initialize Random Seed to Current Timestamp
     random_init();
 
+    // Camera Setup
     vec3     LOOKFROM            = {  0,  3, 10 };
     vec3     LOOKAT              = {  0,  0,  0 };
     vec3     VUP                 = {  0,  1,  0 };
@@ -83,6 +113,7 @@ int main() {
     camera cam;
     camera_setup(&LOOKFROM, &LOOKAT, &VUP, &VFOV, &ASPECT_RATIO, &APERTURE, &FOCUS_DIST, &cam);
 
+    // World Setup
     world w;
     world_create(&w);
 
@@ -95,14 +126,25 @@ int main() {
     world_add_sphere(&w, &s1);
     world_add_sphere(&w, &s2);
 
+    // PNG Initialization
     bitmap img;
     bitmap_create(WIDTH, HEIGHT, &img);
 
-    tile_queue tq = tile_generate(&img);
-    while(tq.current < tq.n_tiles)
-        tile_render(&img, &w, &cam, &tq.tiles[tq.current++]);
-
+    // Generate and Render each Tile
+    tq = tile_queue_generate(&img);
+    ta = (targs){ &img, &w, &cam };
+    pthread_mutex_init(&tlock, NULL);
+    for(uint32_t i = 0; i < N_THREADS; i++)
+        pthread_create(&tthreads[i], NULL, tiles_render, (void*)&ta);
+    for(uint32_t i = 0; i < N_THREADS; i++)
+        pthread_join(tthreads[i], NULL);
+    
+    // Save PNG
     bitmap_to_png_file(&img, "../test.png");
+    
+    // Destroy
+    pthread_mutex_destroy(&tlock);
+    tile_queue_free(&tq);
     bitmap_free(&img);
     world_free(&w);
 
