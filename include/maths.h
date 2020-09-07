@@ -12,7 +12,8 @@
 #define M2PI    6.28318530718
 
 // ============ STRUCTS ============
-typedef struct { double x, y, z; }    vec3;
+typedef struct { double x, y; }    vec2;
+typedef struct { double x, y, z; } vec3;
 
 // ============ RANDOM METHODS ============
 void   random_init             ();
