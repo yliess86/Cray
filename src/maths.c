@@ -22,6 +22,12 @@ double degree_to_radian(const double degree) {
 double clamp(const double s, const double a, const double b) {
     return (s < a)? a: (s > b)? b: s;
 }
+
+double schlick(double cosine, double eta) {
+    double r0 = (1 - eta) / (1 + eta);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * pow((1 - cosine), 5);
+}
 // ============ [END] UTILS METHODS ============
 
 // ============ [START] VEC3 METHODS ============
@@ -67,7 +73,7 @@ void vec3_print(vec3* v) {
 }
 
 double vec3_sqr_length(vec3* v) {
-    return vec3_dot(v, v);
+    return v->x * v->x + v->y * v->y + v->z * v->z;
 }
 
 double vec3_length(vec3* v) {
@@ -82,6 +88,24 @@ void vec3_reflect(vec3* v, vec3* n, vec3* dest) {
     vec3 dir;
     vec3_mul_scalar(n, 2 * vec3_dot(v, n), &dir);
     vec3_sub(v, &dir, dest);
+}
+
+void vec3_refract(vec3* v, vec3* n, double eta_ratio, vec3* dest) {
+    vec3 neg_v;
+    vec3_neg(v, &neg_v);
+    
+    double cos_theta = vec3_dot(&neg_v, n);
+    
+    vec3 r_out_perp;
+    vec3_mul_scalar(n, cos_theta, &r_out_perp);
+    vec3_add(&r_out_perp, v, &r_out_perp);
+    vec3_mul_scalar(&r_out_perp, eta_ratio, &r_out_perp);
+    
+    double len = -sqrt(fabs(1.0 - vec3_sqr_length(&r_out_perp)));
+    vec3 r_out_parallel;
+    vec3_mul_scalar(n, len, &r_out_parallel);
+    
+    vec3_add(&r_out_perp, &r_out_parallel, dest);
 }
 
 void vec3_sqrt(vec3* v, vec3* dest) {

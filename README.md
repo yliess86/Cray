@@ -1,15 +1,23 @@
-# Cray: a Simple C RayTracer
+<center><h1>Cray: a Simple C RayTracer</h1></center>
 
-<p style="margin: 0 auto; max-width: 1920px;">
-    <img alt="cover" src="cover.png" />
-</p>
+<center><img alt="cover" src="cover.png" style="width: 50%; border-radius: 25px;" /></center>
 
-## How to
+<center>
+    <b>Cray</b> is a simple <b>RayTracer</b> made in C following <a href="https://raytracing.github.io/books/RayTracingInOneWeekend.html">Ray Tracing in One Weekend</a>.</br>
+    The project has been Extended for <b>Multithreaded Tile Rendering</b>.
+</center>
+
+## Build (Linux Only)
 
 ```sh
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 make
+```
+
+## Launch
+
+```sh
+cd build
 ./cray
 ```

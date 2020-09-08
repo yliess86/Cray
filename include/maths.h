@@ -23,6 +23,7 @@ double random_double_a_b       (double a, double b);
 // ============ UTILS METHODS ============
 double degree_to_radian        (const double degree);
 double clamp                   (const double s, const double a, const double b);
+double schlick                 (double cosine, double eta);
 
 // ============ VEC3 METHODS ============
 vec3   vec3_zeros              ();
@@ -37,6 +38,7 @@ double vec3_sqr_length         (vec3* v);
 double vec3_length             (vec3* v);
 double vec3_dot                (vec3* a, vec3* b);
 void   vec3_reflect            (vec3* v, vec3* n, vec3* dest);
+void   vec3_refract            (vec3* v, vec3* n, double eta_ratio, vec3* dest);
 void   vec3_sqrt               (vec3* v, vec3* dest);
 void   vec3_neg                (vec3* v, vec3* dest);
 void   vec3_add                (vec3* a, vec3* b, vec3* dest);

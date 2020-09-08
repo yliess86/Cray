@@ -16,8 +16,9 @@
 typedef struct { vec3 origin, direction; }                                                            ray;
 
 typedef struct { vec3 albedo; }                                                                       lambertian;
-typedef struct { vec3 albedo; }                                                                       metalic;
-typedef struct { uint32_t type; union { lambertian* l; metalic* m; } data; }                          material;
+typedef struct { vec3 albedo; double fuzz; }                                                          metalic;
+typedef struct { vec3 albedo; double eta; }                                                           dielectric;
+typedef struct { uint32_t type; union { lambertian* l; metalic* m; dielectric* d; } data; }           material;
 
 typedef struct { vec3 point, normal; double t; bool front_face; material* m; }                        hit;
 
@@ -31,7 +32,7 @@ typedef struct { vec3 origin, lower_left_corner, horizontal, vertical, u, v, w; 
 
 // ============ ENUMS ============
 enum primtives { SPHERE, PLANE };
-enum materials { LAMBERTIAN, METALIC };
+enum materials { LAMBERTIAN, METALIC, DIELECTRIC };
 
 // ============ RAY METHODS ============
 void ray_at              (ray* r, double t, vec3* dest);
@@ -40,10 +41,12 @@ void ray_hit_face_normal (ray* r, hit* h);
 
 // ============ MATERIAL METHODS ============
 void lambertian_create   (vec3* albedo, material* dest);
-void metalic_create      (vec3* albedo, material* dest);
+void metalic_create      (vec3* albedo, double fuzz, material* dest);
+void dielectric_create   (vec3* albedo, double eta, material* dest);
 
 bool lambertian_scatter  (lambertian* l, hit* h, vec3* attenuation, ray* r_scattered);
 bool metalic_scatter     (metalic* m, ray* r_in, hit* h, vec3* attenuation, ray* r_scattered);
+bool dielectric_scatter  (dielectric* d, ray* r_in, hit* h, vec3* attenuation, ray* r_scattered);
 bool material_scatter    (material* m, ray* r_in, hit* h, vec3* attenuation, ray* r_scattered);
 
 // ============ SPHERE METHODS ============

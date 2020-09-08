@@ -10,9 +10,21 @@
 #define WIDTH             3840
 #define HEIGHT            2160
 #define TILE_SIZE         128
-#define SAMPLES_PER_PIXEL 100
-#define MAX_DEPTH         100
+#define SAMPLES_PER_PIXEL 256
+#define MAX_DEPTH         256
 #define N_THREADS         8
+#define PROGRESS_BAR_SIZE 50
+
+void print_progress(uint32_t value, uint32_t total, uint8_t size) {
+    double progress = (double)value / total;
+    uint8_t n_bars = (uint8_t)(progress * size);
+    char* progress_bar = (char*)calloc(size, sizeof(char));
+    for(uint8_t i = 0; i < size; i++)
+        progress_bar[i] = (i < n_bars)? '#': ' ';
+    printf("\rClay Rendering Tiles ... [%s] %2.2f%%", progress_bar, progress * 100);
+    fflush(stdout);
+    free(progress_bar);
+}
 
 typedef struct { bitmap* img; world* w; camera* cam; }              targs;
 typedef struct { uint32_t id; vec2 origin; }                        tile;
@@ -87,15 +99,7 @@ void* tiles_render(void* args) {
         tile* t = &tq.tiles[tq.current++];
         pthread_mutex_unlock(&tlock);
         tile_render(ta->img, ta->w, ta->cam, t);
-
-        double progress = (double)tq.current / tq.n_tiles;
-        uint8_t n_bars = (uint8_t)(progress * 25);
-        char* progress_bar = (char*)calloc(25, sizeof(char));
-        for(uint8_t i = 0; i < 25; i++)
-            progress_bar[i] = (i < n_bars)? '#': ' ';
-        printf("\rClay Rendering Tiles ... [%s] %2.2f%%", progress_bar, progress * 100);
-        fflush(stdout);
-        free(progress_bar);
+        print_progress(tq.current, tq.n_tiles, PROGRESS_BAR_SIZE);
     }
 
     return NULL;
@@ -121,36 +125,48 @@ int main() {
     world w;
     world_create(&w);
 
-    material m1, m2, m3;
-    vec3 c1 = { 0.1, 0.1, 0.1 };
-    vec3 c2 = { 0.1, 0.2, 0.7 };
-    vec3 c3 = { 0.2, 0.6, 0.3 };
-    metalic_create   (&c1, &m1);
-    lambertian_create(&c2, &m2);
-    lambertian_create(&c3, &m3);
+    vec3 dark_gray  = { 0.1, 0.1, 0.1 };
+    vec3 gold       = { 0.5, 0.5, 0.1 };
+    vec3 blue       = { 0.1, 0.2, 0.7 };
+    vec3 green      = { 0.2, 0.4, 0.1 };
+    vec3 water      = { 1.0, 1.0, 1.0 };
 
-    sphere s1, s2, s3;
-    vec3 p1 = {   0,    0,   0 };
-    vec3 p2 = { 1.5, -1.5, 1.5 };
-    vec3 p3 = {   0, -102,   0 };
-    sphere_create(&p1, 2.0, &m1, &s1);
-    sphere_create(&p2, 0.5, &m2, &s2);
-    sphere_create(&p3, 100, &m3, &s3);
+    material m_gray, m_gold, m_blue, m_green, m_water;
+    metalic_create   (&dark_gray,  0.1, &m_gray);
+    metalic_create   (&gold,       0.5, &m_gold);
+    lambertian_create(&green,           &m_green);
+    lambertian_create(&blue,            &m_blue);
+    dielectric_create(&water,     1.33, &m_water);
+
+    vec3 p_gray  = {    0,    0,   0 };
+    vec3 p_gold  = { -1.5, -1.5, 1.5 };
+    vec3 p_green = {    0, -102,   0 };
+    vec3 p_blue  = {  1.5, -1.5, 1.5 };
+    vec3 p_water = {    0, -1.5,   2 };
+
+    sphere s_gray, s_gold, s_green, s_blue, s_water;
+    sphere_create(&p_gray,  2.0, &m_gray,  &s_gray);
+    sphere_create(&p_gold,  0.5, &m_gold,  &s_gold);
+    sphere_create(&p_green, 100, &m_green, &s_green);
+    sphere_create(&p_blue,  0.5, &m_blue,  &s_blue);
+    sphere_create(&p_water, 0.5, &m_water, &s_water);
     
-    world_add_sphere(&w, &s1);
-    world_add_sphere(&w, &s2);
-    world_add_sphere(&w, &s3);
+    world_add_sphere(&w, &s_gray);
+    world_add_sphere(&w, &s_gold);
+    world_add_sphere(&w, &s_green);
+    world_add_sphere(&w, &s_blue);
+    world_add_sphere(&w, &s_water);
 
     // PNG Initialization
     bitmap img;
     bitmap_create(WIDTH, HEIGHT, &img);
 
-    // Generate and Render each Tile
-    printf("\rClay Rendering Tiles ... [                         ] 0.0%%");
-    fflush(stdout);
-
-    ta = (targs){ &img, &w, &cam };
+    // Generate Tiles
     tile_queue_generate(&img, &tq);
+    print_progress(tq.current, tq.n_tiles, PROGRESS_BAR_SIZE);
+
+    // Render each Tile
+    ta = (targs){ &img, &w, &cam };
     pthread_mutex_init(&tlock, NULL);
     for(uint32_t i = 0; i < N_THREADS; i++)
         pthread_create(&tthreads[i], NULL, tiles_render, (void*)&ta);

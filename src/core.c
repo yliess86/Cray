@@ -45,11 +45,20 @@ void lambertian_create(vec3* albedo, material* dest) {
     dest->data.l = l;
 }
 
-void metalic_create(vec3* albedo, material* dest) {
+void metalic_create(vec3* albedo, double fuzz, material* dest) {
     metalic* m = (metalic*)malloc(sizeof(metalic));
     m->albedo = *albedo;
+    m->fuzz = fuzz;
     dest->type = METALIC;
     dest->data.m = m;
+}
+
+void dielectric_create(vec3* albedo, double eta, material* dest) {
+    dielectric* d = (dielectric*)malloc(sizeof(dielectric));
+    d->albedo = *albedo;
+    d->eta = eta;
+    dest->type = DIELECTRIC;
+    dest->data.d = d;
 }
 
 bool lambertian_scatter(lambertian* l, hit* h, vec3* attenuation, ray* r_scattered) {
@@ -66,8 +75,43 @@ bool metalic_scatter(metalic* m, ray* r_in, hit* h, vec3* attenuation, ray* r_sc
     vec3_normalize(&r_in->direction, &unit_dir);
     vec3_reflect(&unit_dir, &h->normal, &reflected);
     *r_scattered = (ray){ h->point, reflected };
+    vec3 fuzz = vec3_random_unit_sphere();
+    vec3_mul_scalar(&fuzz, m->fuzz, &fuzz);
+    vec3_add(&r_scattered->direction, &fuzz, &r_scattered->direction);
+    vec3_normalize(&r_scattered->direction, &r_scattered->direction);
     *attenuation = m->albedo;
     return vec3_dot(&r_scattered->direction, &h->normal) > 0;
+}
+
+bool dielectric_scatter(dielectric* d, ray* r_in, hit* h, vec3* attenuation, ray* r_scattered) {
+    double eta_ratio = h->front_face? (1.0 / d->eta): d->eta;
+    
+    vec3 unit_dir, neg_unit_dir;
+    vec3_normalize(&r_in->direction, &unit_dir);
+    vec3_neg(&unit_dir, &neg_unit_dir);
+
+    double cos_theta = fmin(vec3_dot(&neg_unit_dir, &h->normal), 1.0);
+    double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+    if(eta_ratio * sin_theta > 1.0) {
+        vec3 reflected;
+        vec3_reflect(&unit_dir, &h->normal, &reflected);
+        *r_scattered = (ray){ h->point, reflected };
+        return true;
+    }
+
+    double reflect_prob = schlick(cos_theta, eta_ratio);
+    if(random_double() < reflect_prob) {
+        vec3 reflected;
+        vec3_reflect(&unit_dir, &h->normal, &reflected);
+        *r_scattered = (ray){ h->point, reflected };
+        return true;
+    }
+
+    vec3 refracted;
+    vec3_refract(&unit_dir, &h->normal, eta_ratio, &refracted);
+    *r_scattered = (ray){ h->point, refracted };
+    *attenuation = d->albedo;
+    return true;
 }
 
 bool material_scatter(material* m, ray* r_in, hit* h, vec3* attenuation, ray* r_scattered) {
@@ -77,11 +121,12 @@ bool material_scatter(material* m, ray* r_in, hit* h, vec3* attenuation, ray* r_
             return lambertian_scatter(m->data.l, h, attenuation, r_scattered);
         case METALIC:
             return metalic_scatter(m->data.m, r_in, h, attenuation, r_scattered);
+        case DIELECTRIC:
+            return dielectric_scatter(m->data.d, r_in, h, attenuation, r_scattered);
     }
     
     return true;
 }
-
 // ============ [END] MATERIAL METHODS ============
 
 // ============ [START] SPHERE METHODS ============
